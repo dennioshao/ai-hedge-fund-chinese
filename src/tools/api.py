@@ -1,5 +1,7 @@
 import datetime
 import os
+from dotenv import load_dotenv  # ➕ 新增：加载 .env
+load_dotenv()
 import pandas as pd
 import requests
 
@@ -18,38 +20,84 @@ from src.data.models import (
     CompanyFactsResponse,
 )
 
+from src.utils.data_provider import get_cn_stock_data  # ➕ 新增：引入中国行情数据
+
 # Global cache instance
 _cache = get_cache()
 
 
 def get_prices(ticker: str, start_date: str, end_date: str) -> list[Price]:
     """Fetch price data from cache or API."""
-    # Check cache first
-    if cached_data := _cache.get_prices(ticker):
-        # Filter cached data by date range and convert to Price objects
-        filtered_data = [Price(**price) for price in cached_data if start_date <= price["time"] <= end_date]
-        if filtered_data:
-            return filtered_data
+    # ➕ 新增：清洗输入股票代码，去除空格并统一大小写
+    raw_ticker = ticker.strip()                  # ➕ 清洗输入
+    ticker_upper = raw_ticker.upper()            # ➕ 统一大小写
 
-    # If not in cache or no data in range, fetch from API
+    # 1. 缓存优先
+    if cached_data := _cache.get_prices(raw_ticker):
+        filtered = [
+            Price(**price)
+            for price in cached_data
+            if start_date <= price["time"] <= end_date
+        ]
+        if filtered:
+            return filtered
+
+    # 2. 中国 A 股分支
+    # ✅ 修改：不仅识别 .SZ/.SH 后缀，也识别 6 位数字+点+2 位大写交易所
+    symbol, *suffix = ticker_upper.split(".")
+    if len(suffix) == 1 and symbol.isdigit() and len(symbol) == 6 and suffix[0] in ("SZ", "SH"):
+        # ➕ 新增：使用 Tushare 拉取中国市场数据
+        try:
+            df = get_cn_stock_data(raw_ticker, start_date, end_date)
+        except Exception as e:
+            raise Exception(f"Error fetching data: {raw_ticker} - {e}")
+    
+        # ➕ 新增：将 DataFrame 转为 Price 对象列表
+        prices = []
+        for _, row in df.iterrows():
+            prices.append(
+                Price(
+                    time=row["trade_date"],
+                    open=row["open"],
+                    high=row["high"],
+                    low=row["low"],
+                    close=row["close"],
+                    volume=int(row.get("vol", 0)),
+                )
+            )
+    
+        # ➕ 新增：缓存结果
+        _cache.set_prices(raw_ticker, [p.model_dump() for p in prices])
+        return prices
+    
+    
+    # 3. 其它市场——原有中转服务接口
     headers = {}
     if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
         headers["X-API-KEY"] = api_key
 
-    url = f"https://api.financialdatasets.ai/prices/?ticker={ticker}&interval=day&interval_multiplier=1&start_date={start_date}&end_date={end_date}"
+    # ✅ 修改：使用 raw_ticker 而非原 ticker
+    url = (
+        f"https://api.financialdatasets.ai/prices/"
+        f"?ticker={raw_ticker}"
+        f"&interval=day&interval_multiplier=1"
+        f"&start_date={start_date}&end_date={end_date}"
+    )
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
-        raise Exception(f"Error fetching data: {ticker} - {response.status_code} - {response.text}")
+        raise Exception(
+            f"Error fetching data: {raw_ticker} - {response.status_code} - {response.text}"
+        )
 
-    # Parse response with Pydantic model
+    # Parse with Pydantic
     price_response = PriceResponse(**response.json())
     prices = price_response.prices
 
     if not prices:
         return []
 
-    # Cache the results as dicts
-    _cache.set_prices(ticker, [p.model_dump() for p in prices])
+     # 缓存并返回
+    _cache.set_prices(raw_ticker, [p.model_dump() for p in prices])
     return prices
 
 
@@ -59,14 +107,13 @@ def get_financial_metrics(
     period: str = "ttm",
     limit: int = 10,
 ) -> list[FinancialMetrics]:
-    """Fetch financial metrics from cache or API."""
-    # Check cache first
-    if cached_data := _cache.get_financial_metrics(ticker):
-        # Filter cached data by date and limit
-        filtered_data = [FinancialMetrics(**metric) for metric in cached_data if metric["report_period"] <= end_date]
-        filtered_data.sort(key=lambda x: x.report_period, reverse=True)
-        if filtered_data:
-            return filtered_data[:limit]
+    """
+    ✅ 修改：A 股代码跳过 FinancialDatasets 调用，直接返回空列表。
+    Fetch financial metrics from cache or API."""
+    # ➕ 新增：A 股代码无需调用 FinancialDatasets，直接返回空
+    raw_ticker = ticker.strip().upper()
+    if raw_ticker.endswith((".SZ", ".SH")):
+        return []
 
     # If not in cache or insufficient data, fetch from API
     headers = {}
@@ -99,6 +146,11 @@ def search_line_items(
     limit: int = 10,
 ) -> list[LineItem]:
     """Fetch line items from API."""
+    # ➕ 新增：A 股代码跳过此接口
+    raw_ticker = ticker.strip().upper()
+    if raw_ticker.endswith((".SZ", ".SH")):
+        return []
+    
     # If not in cache or insufficient data, fetch from API
     headers = {}
     if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
@@ -133,7 +185,11 @@ def get_insider_trades(
     limit: int = 1000,
 ) -> list[InsiderTrade]:
     """Fetch insider trades from cache or API."""
-    # Check cache first
+    # ➕ 新增：A 股代码跳过内线交易接口
+    raw_ticker = ticker.strip().upper()
+    if raw_ticker.endswith((".SZ", ".SH")):
+        return []
+
     if cached_data := _cache.get_insider_trades(ticker):
         # Filter cached data by date range
         filtered_data = [InsiderTrade(**trade) for trade in cached_data if (start_date is None or (trade.get("transaction_date") or trade["filing_date"]) >= start_date) and (trade.get("transaction_date") or trade["filing_date"]) <= end_date]
@@ -194,7 +250,11 @@ def get_company_news(
     limit: int = 1000,
 ) -> list[CompanyNews]:
     """Fetch company news from cache or API."""
-    # Check cache first
+    # ➕ 新增：A 股代码跳过新闻接口
+    raw_ticker = ticker.strip().upper()
+    if raw_ticker.endswith((".SZ", ".SH")):
+        return []
+    
     if cached_data := _cache.get_company_news(ticker):
         # Filter cached data by date range
         filtered_data = [CompanyNews(**news) for news in cached_data if (start_date is None or news["date"] >= start_date) and news["date"] <= end_date]
@@ -253,7 +313,11 @@ def get_market_cap(
     end_date: str,
 ) -> float | None:
     """Fetch market cap from the API."""
-    # Check if end_date is today
+    # ➕ 新增：A 股代码跳过市值接口
+    raw_ticker = ticker.strip().upper()
+    if raw_ticker.endswith((".SZ", ".SH")):
+        return None
+    
     if end_date == datetime.datetime.now().strftime("%Y-%m-%d"):
         # Get the market cap from company facts API
         headers = {}

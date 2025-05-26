@@ -339,7 +339,8 @@ if not "!USE_OLLAMA!"=="" (
 
 :: Standard Docker run (without Ollama)
 :: Build the command
-set CMD=docker run -it --rm -v %cd%\.env:/app/.env
+set CMD=docker run -it --rm -v %cd%:/app -w /app --env-file .env ai-hedge-fund python -m src.main --ticker !TICKER! !START_DATE! !END_DATE! !INITIAL_PARAM! --margin-requirement !MARGIN_REQUIREMENT! !SHOW_REASONING!
+
 
 :: Add the command
 set CMD=!CMD! ai-hedge-fund python !SCRIPT_PATH! --ticker !TICKER! !START_DATE! !END_DATE! !INITIAL_PARAM! --margin-requirement !MARGIN_REQUIREMENT! !SHOW_REASONING!

@@ -1,8 +1,9 @@
+import json
 from langchain_core.messages import HumanMessage
 from src.graph.state import AgentState, show_agent_reasoning
 from src.utils.progress import progress
-from src.tools.api import get_prices, prices_to_df
-import json
+from src.utils.data_provider import get_cn_stock_data 
+
 
 
 ##### Risk Management Agent #####
@@ -19,25 +20,26 @@ def risk_management_agent(state: AgentState):
     for ticker in tickers:
         progress.update_status("risk_management_agent", ticker, "Analyzing price data")
 
-        prices = get_prices(
-            ticker=ticker,
-            start_date=data["start_date"],
-            end_date=data["end_date"],
-        )
-
-        if not prices:
-            progress.update_status("risk_management_agent", ticker, "Failed: No price data found")
+       # ➕ 新增：使用 Tushare 拉取中国市场日线数据
+        try:
+            df = get_cn_stock_data(
+                ticker=ticker,
+                start_date=data["start_date"],
+                end_date=data["end_date"],
+            )
+        except Exception as e:
+            progress.update_status("risk_management_agent", ticker, f"Failed: {e}")
             continue
 
-        prices_df = prices_to_df(prices)
+        prices_df = df  # DataFrame 已经包含 ['trade_date','open','high','low','close','vol']
 
         progress.update_status("risk_management_agent", ticker, "Calculating position limits")
 
-        # Calculate portfolio value
-        current_price = prices_df["close"].iloc[-1]
-        current_prices[ticker] = current_price  # Store the current price
+        # ✅ 修改：根据最后一个交易日收盘价作为当前价格
+        current_price = float(df["close"].iloc[-1])
+        current_prices[ticker] = current_price
 
-        # Calculate current position value for this ticker
+        # ➕ 新增：计算当前成本价对应的持仓市值（与原逻辑一致）
         current_position_value = portfolio.get("cost_basis", {}).get(ticker, 0)
 
         # Calculate total portfolio value using stored prices

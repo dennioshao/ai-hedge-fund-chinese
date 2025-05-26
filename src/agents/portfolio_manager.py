@@ -1,3 +1,4 @@
+from src.utils.data_provider import get_cn_stock_data
 import json
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -29,6 +30,9 @@ def portfolio_management_agent(state: AgentState):
     analyst_signals = state["data"]["analyst_signals"]
     tickers = state["data"]["tickers"]
 
+    start_date = state["data"].get("start_date")
+    end_date   = state["data"].get("end_date")
+
     # Get position limits, current prices, and signals for every ticker
     position_limits = {}
     current_prices = {}
@@ -37,23 +41,36 @@ def portfolio_management_agent(state: AgentState):
     for ticker in tickers:
         progress.update_status("portfolio_manager", ticker, "Processing analyst signals")
 
-        # Get position limits and current prices for the ticker
-        risk_data = analyst_signals.get("risk_management_agent", {}).get(ticker, {})
-        position_limits[ticker] = risk_data.get("remaining_position_limit", 0)
-        current_prices[ticker] = risk_data.get("current_price", 0)
+    # ✅ 修改：优先从风险管理信号里读限额；如无或需实时价，则用 Tushare
+    risk_data = analyst_signals.get("risk_management_agent", {}).get(ticker, {})
+    position_limits[ticker] = risk_data.get("remaining_position_limit", 0)
+    price = risk_data.get("current_price", 0)
+    if not price or price <= 0:
+        # ➕ 新增：取最近收盘价
+        try:
+            df = get_cn_stock_data(
+                ticker=ticker,
+                start_date=state["data"]["start_date"],
+                end_date=state["data"]["end_date"],
+            )
+            price = float(df["close"].iloc[-1])
+        except Exception as e:
+            progress.update_status("portfolio_manager", ticker, f"Failed fetch price: {e}")
+            price = 0.0
+    current_prices[ticker] = price
 
-        # Calculate maximum shares allowed based on position limit and price
-        if current_prices[ticker] > 0:
-            max_shares[ticker] = int(position_limits[ticker] / current_prices[ticker])
-        else:
+    # ➕ 修改：同样基于最新 price 计算可买卖股数
+    if price > 0:
+        max_shares[ticker] = int(position_limits[ticker] / price)
+    else:
             max_shares[ticker] = 0
 
-        # Get signals for the ticker
-        ticker_signals = {}
-        for agent, signals in analyst_signals.items():
+    # Get signals for the ticker
+    ticker_signals = {}
+    for agent, signals in analyst_signals.items():
             if agent != "risk_management_agent" and ticker in signals:
                 ticker_signals[agent] = {"signal": signals[ticker]["signal"], "confidence": signals[ticker]["confidence"]}
-        signals_by_ticker[ticker] = ticker_signals
+    signals_by_ticker[ticker] = ticker_signals
 
     progress.update_status("portfolio_manager", None, "Generating trading decisions")
 
