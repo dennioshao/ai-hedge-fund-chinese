@@ -1,30 +1,52 @@
-# AI Hedge Fund
+# AI Hedge Fund for Chinese Stock Market
 
-This is a proof of concept for an AI-powered hedge fund.  The goal of this project is to explore the use of AI to make trading decisions.  This project is for **educational** purposes only and is not intended for real trading or investment.
+This project is a localized deployment of the original **ai-hedge-fund** framework, reconfigured to analyze and simulate trading decisions using data from the **Chinese stock market**. While it leverages the same multi-agent architecture, all data inputs, valuation models, and market signals are tailored for onshore Chinese exchanges. The output remains in **English**, ensuring consistency with the original project's interface and reporting.
 
-This system employs several agents working together:
+## System Architecture
 
-1. Aswath Damodaran Agent - The Dean of Valuation, focuses on story, numbers, and disciplined valuation
-2. Ben Graham Agent - The godfather of value investing, only buys hidden gems with a margin of safety
-3. Bill Ackman Agent - An activist investor, takes bold positions and pushes for change
-4. Cathie Wood Agent - The queen of growth investing, believes in the power of innovation and disruption
-5. Charlie Munger Agent - Warren Buffett's partner, only buys wonderful businesses at fair prices
-6. Michael Burry Agent - The Big Short contrarian who hunts for deep value
-7. Peter Lynch Agent - Practical investor who seeks "ten-baggers" in everyday businesses
-8. Phil Fisher Agent - Meticulous growth investor who uses deep "scuttlebutt" research 
-9. Stanley Druckenmiller Agent - Macro legend who hunts for asymmetric opportunities with growth potential
-10. Warren Buffett Agent - The oracle of Omaha, seeks wonderful companies at a fair price
-11. Valuation Agent - Calculates the intrinsic value of a stock and generates trading signals
-12. Sentiment Agent - Analyzes market sentiment and generates trading signals
-13. Fundamentals Agent - Analyzes fundamental data and generates trading signals
-14. Technicals Agent - Analyzes technical indicators and generates trading signals
-15. Risk Manager - Calculates risk metrics and sets position limits
-16. Portfolio Manager - Makes final trading decisions and generates orders
-    
-<img width="1042" alt="Screenshot 2025-03-22 at 6 19 07 PM" src="https://github.com/user-attachments/assets/cbae3dcf-b571-490d-b0ad-3f0f035ac0d4" />
+The system consists of a network of specialized agents working in concert:
 
+1. **Aswath Damodaran Agent** – Story-driven valuation expert.
+2. **Ben Graham Agent** – Seeks value bargains with a margin of safety.
+3. **Bill Ackman Agent** – Activist investing strategies.
+4. **Cathie Wood Agent** – Growth-focused, innovation-driven picks.
+5. **Charlie Munger Agent** – Value and quality oriented investments.
+6. **Michael Burry Agent** – Contrarian deep-value strategies.
+7. **Peter Lynch Agent** – Practical ten-bagger seeker.
+8. **Phil Fisher Agent** – In-depth scuttlebutt research for growth stories.
+9. **Stanley Druckenmiller Agent** – Macro-driven asymmetric opportunities.
+10. **Warren Buffett Agent** – Long-term, fair-price value investing.
+11. **Valuation Agent** – Calculates intrinsic values and signals.
+12. **Sentiment Agent** – Monitors market mood and sentiment.
+13. **Fundamentals Agent** – Analyzes corporate financial data.
+14. **Technicals Agent** – Generates signals from price patterns.
+15. **Risk Manager** – Assesses risk and enforces position limits.
+16. **Portfolio Manager** – Integrates signals and outputs final orders.
 
-**Note**: the system simulates trading decisions, it does not actually trade.
+> **Note:** This system simulates trading decisions—it does **not** execute real trades.
+
+## Chinese Market Customization
+
+* **Data Source:** Onshore exchanges (Shanghai, Shenzhen) with local APIs and data feeds.
+* **Valuation Models:** Adapted to A-share market conventions, accounting for onshore accounting standards.
+* **Risk Parameters:** Calibrated to Chinese market volatility and regulatory requirements.
+
+## Usage
+
+1. Clone this repository.
+2. Install dependencies: `pip install -r requirements.txt`.
+3. Configure your Chinese market data API credentials in `config.yaml`.
+4. Run backtests:
+
+   ```bash
+   python run_simulation.py --market chinese
+   ```
+5. Review results in English via generated reports and dashboards.
+
+---
+
+*Reminder: This project is for **educational** purposes only and should not be used for live trading.*
+
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/virattt?style=social)](https://twitter.com/virattt)
 
