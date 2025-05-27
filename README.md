@@ -202,10 +202,6 @@ poetry run python src/backtester.py --ticker 000001.SZ
 run.bat --ticker 000001.SZ backtest
 ```
 
-**Example Output:**
-<img width="941" alt="Screenshot 2025-01-06 at 5 47 52 PM" src="https://github.com/user-attachments/assets/00e794ea-8628-44e6-9a84-8f8a31ad3b47" />
-
-
 You can optionally specify the start and end dates to backtest over a specific time period.
 
 ```bash
