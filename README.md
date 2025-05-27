@@ -31,24 +31,7 @@ The system consists of a network of specialized agents working in concert:
 * **Valuation Models:** Adapted to A-share market conventions, accounting for onshore accounting standards.
 * **Risk Parameters:** Calibrated to Chinese market volatility and regulatory requirements.
 
-## Usage
-
-1. Clone this repository.
-2. Install dependencies: `pip install -r requirements.txt`.
-3. Configure your Chinese market data API credentials in `config.yaml`.
-4. Run backtests:
-
-   ```bash
-   python run_simulation.py --market chinese
-   ```
-5. Review results in English via generated reports and dashboards.
-
----
-
 *Reminder: This project is for **educational** purposes only and should not be used for live trading.*
-
-
-[![Twitter Follow](https://img.shields.io/twitter/follow/virattt?style=social)](https://twitter.com/virattt)
 
 ## Disclaimer
 
@@ -80,8 +63,8 @@ By using this software, you agree to use it solely for learning purposes.
 
 Clone the repository:
 ```bash
-git clone https://github.com/virattt/ai-hedge-fund.git
-cd ai-hedge-fund
+git clone https://github.com/dennioshao/ai-hedge-fund-chinese.git
+cd ai-hedge-fund-chinese
 ```
 
 1. Install Poetry (if not already installed):
@@ -121,8 +104,8 @@ FINANCIAL_DATASETS_API_KEY=your-financial-datasets-api-key
 
 2. Clone the repository:
 ```bash
-git clone https://github.com/virattt/ai-hedge-fund.git
-cd ai-hedge-fund
+git clone https://github.com/dennioshao/ai-hedge-fund-chinese.git
+cd ai-hedge-fund-chinese
 ```
 
 3. Set up your environment variables:
@@ -144,26 +127,24 @@ run.bat build
 
 **Important**: You must set `OPENAI_API_KEY`, `GROQ_API_KEY`, `ANTHROPIC_API_KEY`, or `DEEPSEEK_API_KEY` for the hedge fund to work.  If you want to use LLMs from all providers, you will need to set all API keys.
 
-Financial data for AAPL, GOOGL, MSFT, NVDA, and TSLA is free and does not require an API key.
-
-For any other ticker, you will need to set the `FINANCIAL_DATASETS_API_KEY` in the .env file.
+Financial data for tickers, you will need to set the `FINANCIAL_DATASETS_API_KEY` in the .env file.
 
 ## Usage
 
-### Running the Hedge Fund
+### Running the Hedge Fund for Chiese Stock Market
 
 #### With Poetry
 ```bash
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA
+poetry run python src/main.py --ticker 000001.SZ
 ```
 
 #### With Docker
 ```bash
 # On Linux/Mac:
-./run.sh --ticker AAPL,MSFT,NVDA main
+./run.sh --ticker 000001.SZ main
 
 # On Windows:
-run.bat --ticker AAPL,MSFT,NVDA main
+run.bat --ticker 000001.SZ main
 ```
 
 **Example Output:**
@@ -173,55 +154,55 @@ You can also specify a `--ollama` flag to run the AI hedge fund using local LLMs
 
 ```bash
 # With Poetry:
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA --ollama
+poetry run python src/main.py --ticker 000001.SZ --ollama
 
 # With Docker (on Linux/Mac):
-./run.sh --ticker AAPL,MSFT,NVDA --ollama main
+./run.sh --ticker 000001.SZ --ollama main
 
 # With Docker (on Windows):
-run.bat --ticker AAPL,MSFT,NVDA --ollama main
+run.bat --ticker 000001.SZ --ollama main
 ```
 
 You can also specify a `--show-reasoning` flag to print the reasoning of each agent to the console.
 
 ```bash
 # With Poetry:
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA --show-reasoning
+poetry run python src/main.py --ticker 000001.SZ --show-reasoning
 
 # With Docker (on Linux/Mac):
-./run.sh --ticker AAPL,MSFT,NVDA --show-reasoning main
+./run.sh --ticker 000001.SZ --show-reasoning main
 
 # With Docker (on Windows):
-run.bat --ticker AAPL,MSFT,NVDA --show-reasoning main
+run.bat --ticker 000001.SZ --show-reasoning main
 ```
 
 You can optionally specify the start and end dates to make decisions for a specific time period.
 
 ```bash
 # With Poetry:
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01 
+poetry run python src/main.py --ticker 000001.SZ --start-date 2024-01-01 --end-date 2024-03-01 
 
 # With Docker (on Linux/Mac):
-./run.sh --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01 main
+./run.sh --ticker 000001.SZ --start-date 2024-01-01 --end-date 2024-03-01 main
 
 # With Docker (on Windows):
-run.bat --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01 main
+run.bat --ticker 000001.SZ --start-date 2024-01-01 --end-date 2024-03-01 main
 ```
 
 ### Running the Backtester
 
 #### With Poetry
 ```bash
-poetry run python src/backtester.py --ticker AAPL,MSFT,NVDA
+poetry run python src/backtester.py --ticker 000001.SZ
 ```
 
 #### With Docker
 ```bash
 # On Linux/Mac:
-./run.sh --ticker AAPL,MSFT,NVDA backtest
+./run.sh --ticker 000001.SZ backtest
 
 # On Windows:
-run.bat --ticker AAPL,MSFT,NVDA backtest
+run.bat --ticker 000001.SZ backtest
 ```
 
 **Example Output:**
@@ -232,31 +213,32 @@ You can optionally specify the start and end dates to backtest over a specific t
 
 ```bash
 # With Poetry:
-poetry run python src/backtester.py --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01
+poetry run python src/backtester.py --ticker 000001.SZ --start-date 2024-01-01 --end-date 2024-03-01
 
 # With Docker (on Linux/Mac):
-./run.sh --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01 backtest
+./run.sh --ticker 000001.SZ --start-date 2024-01-01 --end-date 2024-03-01 backtest
 
 # With Docker (on Windows):
-run.bat --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01 backtest
+run.bat --ticker 000001.SZ --start-date 2024-01-01 --end-date 2024-03-01 backtest
 ```
 
 You can also specify a `--ollama` flag to run the backtester using local LLMs.
 ```bash
 # With Poetry:
-poetry run python src/backtester.py --ticker AAPL,MSFT,NVDA --ollama
+poetry run python src/backtester.py --ticker 000001.SZ --ollama
 
 # With Docker (on Linux/Mac):
-./run.sh --ticker AAPL,MSFT,NVDA --ollama backtest
+./run.sh --ticker 000001.SZ --ollama backtest
 
 # With Docker (on Windows):
-run.bat --ticker AAPL,MSFT,NVDA --ollama backtest
+run.bat --ticker 000001.SZ --ollama backtest
 ```
 
 
 ## Project Structure 
 ```
-ai-hedge-fund/
+ai-hedge-fund-chinese/
+├── hedge_ui                      # UI for the analyzing app
 ├── src/
 │   ├── agents/                   # Agent definitions and workflow
 │   │   ├── bill_ackman.py        # Bill Ackman agent
@@ -291,7 +273,7 @@ ai-hedge-fund/
 
 ## Feature Requests
 
-If you have a feature request, please open an [issue](https://github.com/virattt/ai-hedge-fund/issues) and make sure it is tagged with `enhancement`.
+If you have a feature request, please open an [issue](https://github.com/dennioshao/ai-hedge-fund-chinese/issues) and make sure it is tagged with `enhancement`.
 
 ## License
 
