@@ -147,9 +147,6 @@ poetry run python src/main.py --ticker 000001.SZ
 run.bat --ticker 000001.SZ main
 ```
 
-**Example Output:**
-<img width="992" alt="Screenshot 2025-01-06 at 5 50 17 PM" src="https://github.com/user-attachments/assets/e8ca04bf-9989-4a7d-a8b4-34e04666663b" />
-
 You can also specify a `--ollama` flag to run the AI hedge fund using local LLMs.
 
 ```bash
